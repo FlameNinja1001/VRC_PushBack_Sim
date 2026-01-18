@@ -22299,28 +22299,42 @@ RectTransform:
   m_AnchoredPosition: {x: 0.391, y: 0.166}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!195 &1495451276
-NavMeshAgent:
+--- !u!114 &1495451276
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1495451265}
   m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5000002
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 1
-  m_BaseOffset: 0.5
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbfd7133fba9b4564be3afd7c8766736, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PushBackAIController
+  alliance: 0
+  drive: {fileID: 1495451268}
+  blockControl: {fileID: 1495451267}
+  center1: {fileID: 219532111}
+  center2: {fileID: 1880586432}
+  bottom1: {fileID: 1950683578}
+  bottom2: {fileID: 1466171196}
+  topLeft1: {fileID: 388845061}
+  topLeft2: {fileID: 1082883935}
+  topRight1: {fileID: 1696518880}
+  topRight2: {fileID: 1863884279}
+  decisionRate: 0.25
+  maxForward: 0.05
+  maxTurn: 0.04
+  closeEnoughDistance: 0.5
+  snapDuration: 0.5
+  waitAfterOuttake: 3
+  groundY: -0.2196818
+  groundTolerance: 0.05
+  raycastDistance: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  currentStateName: SearchingBlock
 --- !u!1 &1500890073
 GameObject:
   m_ObjectHideFlags: 0
@@ -22442,7 +22456,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.03, y: -0.347, z: -0.145}
-  m_LocalScale: {x: 0.6331145, y: 0.27857277, z: 0.4533748}
+  m_LocalScale: {x: 0.6331145, y: 0.27857277, z: 0.68699884}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1495451275}
@@ -28364,7 +28378,7 @@ Transform:
   m_GameObject: {fileID: 1880586429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.92387956, z: 0, w: 0.38268343}
-  m_LocalPosition: {x: -1.068, y: 0.166, z: -2.74}
+  m_LocalPosition: {x: -0.835, y: 0.166, z: -2.978}
   m_LocalScale: {x: 0.6571268, y: 0.93061626, z: 0.93061626}
   m_ConstrainProportionsScale: 0
   m_Children:
