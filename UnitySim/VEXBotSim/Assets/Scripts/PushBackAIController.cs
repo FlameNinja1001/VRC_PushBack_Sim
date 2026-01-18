@@ -10,7 +10,7 @@ public class PushBackAIController : MonoBehaviour
     public DifferentialDrive drive;
     public BlockControl blockControl;
 
-    //transforms
+    // Transforms for goal locations
     public Transform center1;
     public Transform center2;
     public Transform bottom1;
@@ -20,22 +20,26 @@ public class PushBackAIController : MonoBehaviour
     public Transform topRight1;
     public Transform topRight2;
 
-    //tuning
+    // Park areas
+    public Transform redPark;
+    public Transform bluePark;
+
+    // Tuning
     public float decisionRate = 0.25f;
     public float maxForward = 0.05f;
     public float maxTurn = 0.04f;
-    public float closeEnoughDistance = 0.2f; 
-    public float snapDuration = 0.5f;        
+    public float closeEnoughDistance = 0.2f;
+    public float snapDuration = 0.5f;
     public float waitAfterOuttake = 3f;
     public float groundY = -0.2196818f;
-    public float groundTolerance = 0.05f;    
+    public float groundTolerance = 0.05f;
     public float raycastDistance = 0.5f;
     public LayerMask obstacleMask;
-    
-    //debug    
+
+    // Debug
     public string currentStateName = "SearchingBlock";
 
-    enum AIState { GoingToBlock, GoingToGoal, Outtaking }
+    enum AIState { GoingToBlock, GoingToGoal, Outtaking, Parking }
     AIState state;
 
     GameObject currentTargetBlock;
@@ -44,6 +48,9 @@ public class PushBackAIController : MonoBehaviour
 
     float decisionTimer;
     HashSet<GameObject> skippedBlocks = new HashSet<GameObject>();
+
+    // Banned blocks (e.g., in scoring zones)
+    public List<GameObject> bannedBlocks = new List<GameObject>();
 
     void Update()
     {
@@ -54,7 +61,9 @@ public class PushBackAIController : MonoBehaviour
             Decide();
         }
 
-        
+        // Automatically ban blocks inside any scoring zones
+        BanBlocksInScoreZones();
+
         if (currentTargetBlock != null && state == AIState.GoingToBlock)
         {
             Vector3 blockPos = currentTargetBlock.transform.position;
@@ -86,7 +95,7 @@ public class PushBackAIController : MonoBehaviour
             }
         }
 
-        if (state != AIState.Outtaking) 
+        if (state != AIState.Outtaking)
             DriveToTarget();
     }
 
@@ -119,11 +128,12 @@ public class PushBackAIController : MonoBehaviour
         }
         else
         {
+            // No grounded blocks left → go to park area
             currentTargetBlock = null;
             currentGoalTransform = null;
-            currentDriveTarget = null;
-            state = AIState.GoingToBlock;
-            currentStateName = "SearchingBlock";
+            currentDriveTarget = alliance == Alliance.Red ? redPark : bluePark;
+            state = AIState.Parking;
+            currentStateName = "Parking";
 
             blockControl.intakeTrigger.SetActive(false);
         }
@@ -145,7 +155,6 @@ public class PushBackAIController : MonoBehaviour
         drive.leftInput = Mathf.Lerp(drive.leftInput, forward + turn, 0.1f);
         drive.rightInput = Mathf.Lerp(drive.rightInput, forward - turn, 0.1f);
 
-        
         if (state == AIState.GoingToGoal && Vector3.Distance(transform.position, currentDriveTarget.position) < closeEnoughDistance)
         {
             StartCoroutine(SmoothSnapAndOuttake(currentDriveTarget));
@@ -154,13 +163,11 @@ public class PushBackAIController : MonoBehaviour
 
     IEnumerator SmoothSnapAndOuttake(Transform goalTransform)
     {
-        
         state = AIState.Outtaking;
         currentStateName = "Outtaking";
 
         blockControl.intakeTrigger.SetActive(false);
 
-        
         Vector3 startPos = transform.position;
         Quaternion startRot = transform.rotation;
         float elapsed = 0f;
@@ -174,11 +181,9 @@ public class PushBackAIController : MonoBehaviour
             yield return null;
         }
 
-        
         transform.position = goalTransform.position;
         transform.rotation = goalTransform.rotation;
 
-        
         if (goalTransform == topLeft1 || goalTransform == topLeft2 ||
             goalTransform == topRight1 || goalTransform == topRight2)
         {
@@ -199,10 +204,8 @@ public class PushBackAIController : MonoBehaviour
             blockControl.outtakeToBottomBool = true;
         }
 
-        
         yield return new WaitForSeconds(waitAfterOuttake);
 
-        
         blockControl.outtakeToTopBool = false;
         blockControl.outtakeToCenterBool = false;
         blockControl.outtakeToBottomBool = false;
@@ -212,7 +215,6 @@ public class PushBackAIController : MonoBehaviour
         currentDriveTarget = null;
         currentStateName = "SearchingBlock";
     }
-
 
     GameObject FindNearestGroundedBlock()
     {
@@ -225,6 +227,7 @@ public class PushBackAIController : MonoBehaviour
         foreach (GameObject b in blocks)
         {
             if (skippedBlocks.Contains(b)) continue;
+            if (bannedBlocks.Contains(b)) continue;
 
             float y = b.transform.position.y;
             if (y < groundY - groundTolerance || y > groundY + groundTolerance) continue;
@@ -264,5 +267,63 @@ public class PushBackAIController : MonoBehaviour
         }
 
         return closest;
+    }
+
+    void BanBlocksInScoreZones()
+    {
+        // Find all scoring zones
+        ScoreZoneScript[] scoreZones = FindObjectsOfType<ScoreZoneScript>();
+
+        foreach (ScoreZoneScript zone in scoreZones)
+        {
+            Collider zoneCollider = zone.GetComponent<Collider>();
+            if (zoneCollider == null) continue;
+
+            // Get all colliders overlapping with the scoring zone
+            Collider[] hits = Physics.OverlapBox(
+                zoneCollider.bounds.center,
+                zoneCollider.bounds.extents,
+                zoneCollider.transform.rotation
+            );
+
+            foreach (Collider hit in hits)
+            {
+                string blockTag = alliance == Alliance.Red ? "RedBlock" : "BlueBlock";
+                if (hit.CompareTag(blockTag) && !bannedBlocks.Contains(hit.gameObject))
+                {
+                    bannedBlocks.Add(hit.gameObject);
+                    Debug.Log($"Banned {hit.gameObject.name} because it's inside {zone.name}");
+                }
+            }
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        if (currentTargetBlock == null) return;
+
+        Vector3 blockPos = currentTargetBlock.transform.position;
+        Vector3[] rayOrigins = new Vector3[]
+        {
+            transform.position + Vector3.up * 0.5f,
+            transform.position + Vector3.up * 0.9f,
+            transform.position + Vector3.up * 1.3f
+        };
+
+        foreach (Vector3 origin in rayOrigins)
+        {
+            Vector3 dir = (blockPos - origin).normalized;
+            Ray ray = new Ray(origin, dir);
+
+            bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, raycastDistance, obstacleMask);
+
+            Gizmos.color = hit ? Color.red : Color.yellow;
+            Gizmos.DrawLine(origin, origin + dir * raycastDistance);
+
+            if (hit)
+            {
+                Gizmos.DrawSphere(hitInfo.point, 0.02f);
+            }
+        }
     }
 }
