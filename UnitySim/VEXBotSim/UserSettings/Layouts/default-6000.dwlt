@@ -402,8 +402,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Console\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 843
-    y: 557
+    x: 0
+    y: 26
     width: 801
     height: 402
   m_SerializedDataModeController:
@@ -440,8 +440,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "UnityEditor.MainToolbarWindow\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 185
-    y: 53
+    x: 0
+    y: 0
     width: 1436
     height: 36
   m_SerializedDataModeController:
@@ -668,12 +668,12 @@ MonoBehaviour:
       displayed: 1
       id: Play Mode Controls
       index: 0
-      contents: '{"m_Layout":4,"m_Collapsed":false,"m_Folded":false,"m_Floating":false,"m_FloatingSnapOffset":{"x":0.0,"y":0.0},"m_SnapOffsetDelta":{"x":0.0,"y":0.0},"m_FloatingSnapCorner":0,"m_Size":{"x":0.0,"y":0.0},"m_SizeOverridden":false}'
+      contents: '{"m_Layout":4,"m_Collapsed":false,"m_Folded":false,"m_Floating":false,"m_FloatingSnapOffset":{"x":-638.5,"y":-36.0},"m_SnapOffsetDelta":{"x":0.0,"y":0.0},"m_FloatingSnapCorner":3,"m_Size":{"x":0.0,"y":0.0},"m_SizeOverridden":false}'
       floating: 0
       collapsed: 0
-      snapOffset: {x: 0, y: 0}
+      snapOffset: {x: -638.5, y: -36}
       snapOffsetDelta: {x: 0, y: 0}
-      snapCorner: 0
+      snapCorner: 3
       layout: 4
       size: {x: 0, y: 0}
       sizeOverridden: 0
@@ -706,8 +706,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Game\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 841
-    y: 89
+    x: 657
+    y: 24
     width: 381
     height: 467
   m_SerializedDataModeController:
@@ -809,8 +809,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Hierarchy\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 185
-    y: 89
+    x: 0
+    y: 24
     width: 234
     height: 467
   m_SerializedDataModeController:
@@ -881,8 +881,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Scene\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 420
-    y: 89
+    x: 236
+    y: 24
     width: 419
     height: 467
   m_SerializedDataModeController:
@@ -1441,7 +1441,7 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 0.36473286, y: 0.1527905, z: -1.3024563}
+    m_Target: {x: -0.877115, y: -0.057970166, z: -1.2741752}
     speed: 2
     m_Value: {x: 0.36473286, y: 0.1527905, z: -1.3024563}
   m_RenderMode: 0
@@ -1489,11 +1489,11 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.19358861, y: 0.069098584, z: -0.013670694, w: 0.9785523}
+    m_Target: {x: 0.18625689, y: 0.76907563, z: -0.55407, w: 0.25853714}
     speed: 2
     m_Value: {x: -0.19358863, y: -0.069098584, z: 0.013670695, w: -0.97855234}
   m_Size:
-    m_Target: 2.0180488
+    m_Target: 1.0158763
     speed: 2
     m_Value: 2.0180488
   m_Ortho:
@@ -1605,8 +1605,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Project\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 185
-    y: 582
+    x: 0
+    y: 517
     width: 1038
     height: 357
   m_SerializedDataModeController:
@@ -1657,9 +1657,7 @@ MonoBehaviour:
       m_Data: 62992
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 62828
-    - m_Data: 1000000000
-    - m_Data: 2147483647
+    - m_Data: 323950
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1692,9 +1690,7 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 62828
-    - m_Data: 1000000000
-    - m_Data: 2147483647
+    - m_Data: 323950
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1815,8 +1811,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1224
-    y: 89
+    x: 1040
+    y: 24
     width: 396
     height: 850
   m_SerializedDataModeController:
