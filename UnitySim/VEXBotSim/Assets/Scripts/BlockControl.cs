@@ -30,7 +30,17 @@ public class BlockControl : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {        
+        foreach (GameObject block in currentBlocks)
+        {
+            if (block == null)
+            {                
+                if (blockStorage == 5)
+                {
+                    blockStorage -= 1;
+                }
+            }
+        }        
         isIntakeActiveBool = intakeTrigger.activeSelf;
         timer -= Time.deltaTime;
         if (timer < 0)

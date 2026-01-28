@@ -8,15 +8,21 @@ public class AITest : MonoBehaviour
     public Transform target;
     public float speed = 1f;
     private Coroutine LookCoroutine;
+    private Coroutine OuttakeCoroutine;
 
     public bool isRotating;
 
     public NavMeshAgent agent;
 
     public float distance;
-    public float distanceThreshold;
+    public float blockDistanceThreshold;
+    public float goalDistanceThreshold;
 
     public BlockControl blockControl;    
+
+    public bool isOuttaking;
+    public float outtakeDuration;
+    public float outtakeLerpDuration;
 
     public void StartRotating()
     {
@@ -26,6 +32,16 @@ public class AITest : MonoBehaviour
         }
 
         LookCoroutine = StartCoroutine(LookAt());
+    }
+
+    public void Outtake()
+    {
+        if (OuttakeCoroutine != null)
+        {
+            StopCoroutine(OuttakeCoroutine);
+        }
+
+        OuttakeCoroutine = StartCoroutine(OuttakeToGoal());
     }
 
     private IEnumerator LookAt()
@@ -48,6 +64,54 @@ public class AITest : MonoBehaviour
         isRotating = false;
     }
 
+    private IEnumerator OuttakeToGoal()
+    {
+        isOuttaking = true;
+        blockControl.intakeTrigger.SetActive(true);
+        Vector3 startPos = transform.position;
+        Quaternion startRot = transform.rotation;
+
+        float elapsed = 0f;
+        float duration = outtakeLerpDuration;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            t = Mathf.Clamp01(t);
+
+            transform.position = Vector3.Lerp(startPos, target.position, t);
+            transform.rotation = Quaternion.Lerp(startRot, target.rotation, t);
+
+            yield return null;
+        }
+
+        // Snap EXACT at the end
+        transform.position = target.position;
+        transform.rotation = target.rotation;
+
+        if (target.gameObject.name.Contains("center"))
+        {
+            blockControl.outtakeToCenterBool = true;
+        }
+        else if (target.gameObject.name.Contains("top"))
+        {
+            blockControl.outtakeToTopBool = true;
+        }
+        else if (target.gameObject.name.Contains("bottom"))
+        {
+            blockControl.outtakeToBottomBool = true;
+        }
+        yield return new WaitForSeconds(outtakeDuration);
+
+        isOuttaking = false;
+        blockControl.outtakeToBottomBool = false;
+        blockControl.outtakeToTopBool = false;
+        blockControl.outtakeToCenterBool = false;
+        target = null;
+        yield return null;
+    }
+
     void Start()
     {        
         target = FindNewBlockTarget();        
@@ -56,9 +120,25 @@ public class AITest : MonoBehaviour
     }
 
     void Update()
-    {
+    {        
+        if (target == null)
+        {
+            if (blockControl.blockStorage > 0)
+            {
+                target = FindGoalOrBlockTarget();
+            }
+            else if (blockControl.blockStorage == 0)
+            {
+                target = FindNewBlockTarget();
+            }
+            else if (blockControl.blockStorage == 5)
+            {
+                target = FindNewGoalTarget();
+            }
+            StartRotating();
+        }
         distance = Vector3.Distance(transform.position, target.position);
-        if (isRotating)
+        if (isRotating || isOuttaking)
         {
             agent.enabled = false;
         }
@@ -68,14 +148,36 @@ public class AITest : MonoBehaviour
             agent.SetDestination(target.position);
         }
 
-        if (distance < distanceThreshold)
+        if (target.gameObject.CompareTag("RedBlock"))
         {
-            blockControl.intakeTrigger.SetActive(true);
+            if (distance < blockDistanceThreshold)
+            {
+                blockControl.intakeTrigger.SetActive(true);
+            }
         }
+        else
+        {
+            blockControl.intakeTrigger.SetActive(false);
+        }
+
+        if (target.gameObject.CompareTag("GoalObj"))
+        {
+            if (distance < goalDistanceThreshold)
+            {
+                if (!isOuttaking)
+                {
+                    Outtake();
+                }
+            }
+        }
+
         if (target.IsChildOf(this.transform))
         {
-            target = FindNewBlockTarget();  
-            StartRotating();          
+            target = null;          
+        }
+        if (target.gameObject.name.Contains("Block") && blockControl.blockStorage == 5)
+        {
+            target = FindNewGoalTarget();
         }
     }
 
@@ -105,6 +207,47 @@ public class AITest : MonoBehaviour
         return transformToReturn;
     }
 
+    public Transform FindNewGoalTarget()
+    {
+        GameObject[] goals = GameObject.FindGameObjectsWithTag("GoalObj");
+        float bestDist = 10000;
+        float currentDist;
+        Transform transformToReturn = null;
+        foreach (GameObject obj in goals)
+        {            
+            currentDist = Vector3.Distance(obj.transform.position, transform.position);
+            if (currentDist <= bestDist)
+            {
+                bestDist = currentDist;
+                transformToReturn = obj.transform;
+            }
+        }
+        return transformToReturn;
+    }
+
+    public Transform FindGoalOrBlockTarget()
+    {
+        Transform goal = FindNewGoalTarget();
+        Transform block = FindNewBlockTarget();
+
+        if (block == null)
+        {
+            return goal;
+        }
+
+        float goalDist = Vector3.Distance(goal.transform.position, transform.position);
+        float blockDist = Vector3.Distance(block.transform.position, transform.position);
+
+        if (goalDist > blockDist)
+        {
+            return goal;
+        }
+        else
+        {
+            return block;
+        }
+    }
+
     public bool IsInScoreZone(GameObject obj)
     {
         ScoreZoneScript[] scoreZones = FindObjectsOfType<ScoreZoneScript>();
@@ -122,4 +265,5 @@ public class AITest : MonoBehaviour
         }
         return false;
     }
+    
 }

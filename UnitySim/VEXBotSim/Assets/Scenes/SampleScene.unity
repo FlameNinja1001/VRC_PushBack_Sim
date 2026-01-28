@@ -4894,7 +4894,7 @@ GameObject:
   - component: {fileID: 219532109}
   m_Layer: 0
   m_Name: center
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7711,7 +7711,7 @@ GameObject:
   - component: {fileID: 388845059}
   m_Layer: 0
   m_Name: topleft
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11079,7 +11079,7 @@ GameObject:
   - component: {fileID: 552997666}
   m_Layer: 0
   m_Name: Red Block (1)
-  m_TagString: RedBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -16918,8 +16918,12 @@ MonoBehaviour:
   isRotating: 0
   agent: {fileID: 853115860}
   distance: 0
-  distanceThreshold: 1
+  blockDistanceThreshold: 0.6
+  goalDistanceThreshold: 0.25
   blockControl: {fileID: 853115850}
+  isOuttaking: 0
+  outtakeDuration: 3
+  outtakeLerpDuration: 0.1
 --- !u!195 &853115860
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -19613,7 +19617,7 @@ GameObject:
   - component: {fileID: 1082883933}
   m_Layer: 0
   m_Name: topleft (1)
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -22862,7 +22866,7 @@ GameObject:
   - component: {fileID: 1317911652}
   m_Layer: 0
   m_Name: Blue Block.008 (1)
-  m_TagString: BlueBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -23127,7 +23131,7 @@ GameObject:
   - component: {fileID: 1335910309}
   m_Layer: 0
   m_Name: Red Block.011 (1)
-  m_TagString: RedBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -24810,7 +24814,7 @@ GameObject:
   - component: {fileID: 1466171194}
   m_Layer: 0
   m_Name: bottom 1
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26862,7 +26866,7 @@ GameObject:
   - component: {fileID: 1592968072}
   m_Layer: 0
   m_Name: Blue Block.011 (1)
-  m_TagString: BlueBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28868,7 +28872,7 @@ GameObject:
   - component: {fileID: 1696518878}
   m_Layer: 0
   m_Name: topright (2)
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29593,7 +29597,7 @@ GameObject:
   - component: {fileID: 1737086602}
   m_Layer: 0
   m_Name: Red Block.001 (1)
-  m_TagString: RedBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -31774,7 +31778,7 @@ GameObject:
   - component: {fileID: 1843799525}
   m_Layer: 0
   m_Name: Blue Block.024 (1)
-  m_TagString: BlueBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -32230,7 +32234,7 @@ GameObject:
   - component: {fileID: 1863884277}
   m_Layer: 0
   m_Name: topright (3)
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -32598,7 +32602,7 @@ GameObject:
   - component: {fileID: 1880586430}
   m_Layer: 0
   m_Name: center
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33190,7 +33194,7 @@ GameObject:
   - component: {fileID: 1929186553}
   m_Layer: 0
   m_Name: Red Block.003 (1)
-  m_TagString: RedBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33806,7 +33810,7 @@ GameObject:
   - component: {fileID: 1950683576}
   m_Layer: 0
   m_Name: bottom
-  m_TagString: Robot
+  m_TagString: GoalObj
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35408,7 +35412,7 @@ GameObject:
   - component: {fileID: 2011590253}
   m_Layer: 0
   m_Name: Blue Block.021 (1)
-  m_TagString: BlueBlock
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -38228,6 +38232,9 @@ SceneRoots:
   - {fileID: 1082883935}
   - {fileID: 388845061}
   - {fileID: 1950683578}
+  - {fileID: 1466171196}
+  - {fileID: 219532111}
+  - {fileID: 1880586432}
   - {fileID: 1317911656}
   - {fileID: 1592968076}
   - {fileID: 2011590257}
@@ -38236,10 +38243,7 @@ SceneRoots:
   - {fileID: 1737086606}
   - {fileID: 1929186557}
   - {fileID: 1335910313}
-  - {fileID: 1466171196}
-  - {fileID: 219532111}
   - {fileID: 1304837630}
-  - {fileID: 1880586432}
   - {fileID: 2133692798}
   - {fileID: 576558312}
   - {fileID: 853115858}
