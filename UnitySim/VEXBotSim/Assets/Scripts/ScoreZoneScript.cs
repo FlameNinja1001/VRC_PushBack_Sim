@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class ScoreZoneScript : MonoBehaviour
 {
@@ -10,6 +12,7 @@ public class ScoreZoneScript : MonoBehaviour
 
     public int finalRedScore = 0;
     public int finalBlueScore = 0;
+    public static List<GameObject> AllZones = new List<GameObject>();
     void Update()
     {
         if (!isLongGoal)
@@ -59,10 +62,12 @@ public class ScoreZoneScript : MonoBehaviour
         if (other.CompareTag("RedBlock"))
         {
             initialRedScore += 3;
+            AllZones.Add(other.gameObject);
         }
         if (other.CompareTag("BlueBlock"))
         {
             initialBlueScore += 3;
+            AllZones.Add(other.gameObject);
         }
 
         
@@ -74,10 +79,12 @@ public class ScoreZoneScript : MonoBehaviour
         if (other.CompareTag("RedBlock"))
         {
             initialRedScore -= 3;
+            AllZones.Remove(other.gameObject);
         }
         if (other.CompareTag("BlueBlock"))
         {
             initialBlueScore -= 3;
+            AllZones.Remove(other.gameObject);
         }        
     }
 }

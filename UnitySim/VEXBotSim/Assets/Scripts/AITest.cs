@@ -5,69 +5,173 @@ using System.Collections.Generic;
 
 public class AITest : MonoBehaviour
 {
+    [Header("Targeting & Movement")]
     public Transform target;
     public float speed = 1f;
-    private Coroutine LookCoroutine;
-    private Coroutine OuttakeCoroutine;
-
-    public bool isRotating;
-
     public NavMeshAgent agent;
 
+    [Header("Distance Thresholds")]
     public float distance;
     public float blockDistanceThreshold;
     public float goalDistanceThreshold;
 
-    public BlockControl blockControl;    
-
+    [Header("Outtake Settings")]
+    public BlockControl blockControl;
     public bool isOuttaking;
     public float outtakeDuration;
     public float outtakeLerpDuration;
 
+    [Header("Tag Settings")]
+    public string tag = "RedBlock";
+
+    [Header("Rotation Settings")]
+    public bool isRotating;
+    private Coroutine LookCoroutine;
+    private Coroutine OuttakeCoroutine;
+
+    [Header("NavMesh Corner Tracking")]
+    private int currentCornerIndex = 1; // start at first corner after agent position
+    public float cornerReachThreshold = 0.1f;
+
+    void Start()
+    {
+        agent.updateRotation = false; // never use built-in rotation
+        target = FindNewBlockTarget();
+        if (target != null) StartRotating();
+    }
+
+    void Update()
+    {
+        if (target == null)
+        {
+            if (blockControl.blockStorage == 0)
+                target = FindNewBlockTarget();
+            else if (blockControl.blockStorage > 0)
+                target = FindGoalOrBlockTarget();
+            else if (blockControl.blockStorage == 5)
+                target = FindNewGoalTarget();
+
+            currentCornerIndex = 1;
+            if (target != null) StartRotating();
+        }
+
+        if (target == null) return;
+
+        distance = Vector3.Distance(transform.position, target.position);
+
+        // Enable/disable NavMesh movement
+        if (isRotating || isOuttaking)
+            agent.enabled = false;
+        else
+        {
+            agent.enabled = true;
+            agent.SetDestination(target.position);
+        }
+
+        // Handle intake trigger for blocks
+        if (target.CompareTag(tag))
+        {
+            if (distance < blockDistanceThreshold)
+                blockControl.intakeTrigger.SetActive(true);
+        }
+        else
+        {
+            blockControl.intakeTrigger.SetActive(false);
+        }
+
+        // Handle outtake toward goal
+        if (target.CompareTag("GoalObj"))
+        {
+            if (distance < goalDistanceThreshold && !isOuttaking)
+                Outtake();
+        }
+        // If full storage, switch target to goal
+        if (target.name.Contains("Block") && blockControl.blockStorage == 5)
+        {
+            target = FindNewGoalTarget();
+            currentCornerIndex = 1;
+            StartRotating();
+        }
+
+        // Avoid targeting child objects
+        if (target.IsChildOf(this.transform))
+        {
+            target = null;
+        }        
+
+        // --- ROTATE AT NAVMESH CORNERS ---
+        if (agent.enabled && agent.hasPath && !isRotating)
+        {
+            Vector3[] corners = agent.path.corners;
+
+            if (currentCornerIndex < corners.Length)
+            {
+                Vector3 corner = corners[currentCornerIndex];
+                float distToCorner = Vector3.Distance(transform.position, corner);
+
+                if (distToCorner < cornerReachThreshold)
+                {
+                    currentCornerIndex++;
+                    if (currentCornerIndex < corners.Length)
+                    {
+                        target.position = corners[currentCornerIndex]; // temp target for LookAt
+                        StartRotating();
+                    }
+                }
+            }
+        }
+    }
+
+    // --------------------------
+    // ROTATION
+    // --------------------------
     public void StartRotating()
     {
         if (LookCoroutine != null)
-        {
             StopCoroutine(LookCoroutine);
-        }
 
         LookCoroutine = StartCoroutine(LookAt());
     }
 
-    public void Outtake()
-    {
-        if (OuttakeCoroutine != null)
-        {
-            StopCoroutine(OuttakeCoroutine);
-        }
-
-        OuttakeCoroutine = StartCoroutine(OuttakeToGoal());
-    }
-
     private IEnumerator LookAt()
     {
+        if (target == null) yield break;
+
         isRotating = true;
+
         Quaternion lookRotation = Quaternion.LookRotation(-(target.position - transform.position));
         Vector3 euler = lookRotation.eulerAngles;
         lookRotation = Quaternion.Euler(0f, euler.y, 0f);
 
-        float time = 0;
+        float time = 0f;
 
-        while (time < 1)
+        while (time < 1f)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, time);
-
             time += Time.deltaTime * speed;
-
             yield return null;
         }
+
+        transform.rotation = lookRotation; // snap exactly
         isRotating = false;
+    }
+
+    // --------------------------
+    // OUTTAKE
+    // --------------------------
+    public void Outtake()
+    {
+        if (OuttakeCoroutine != null)
+            StopCoroutine(OuttakeCoroutine);
+
+        OuttakeCoroutine = StartCoroutine(OuttakeToGoal());
     }
 
     private IEnumerator OuttakeToGoal()
     {
         isOuttaking = true;
         blockControl.intakeTrigger.SetActive(true);
+
         Vector3 startPos = transform.position;
         Quaternion startRot = transform.rotation;
 
@@ -77,8 +181,7 @@ public class AITest : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            t = Mathf.Clamp01(t);
+            float t = Mathf.Clamp01(elapsed / duration);
 
             transform.position = Vector3.Lerp(startPos, target.position, t);
             transform.rotation = Quaternion.Lerp(startRot, target.rotation, t);
@@ -86,143 +189,69 @@ public class AITest : MonoBehaviour
             yield return null;
         }
 
-        // Snap EXACT at the end
         transform.position = target.position;
         transform.rotation = target.rotation;
 
-        if (target.gameObject.name.Contains("center"))
-        {
+        if (target.name.Contains("center"))
             blockControl.outtakeToCenterBool = true;
-        }
-        else if (target.gameObject.name.Contains("top"))
-        {
+        else if (target.name.Contains("top"))
             blockControl.outtakeToTopBool = true;
-        }
-        else if (target.gameObject.name.Contains("bottom"))
-        {
+        else if (target.name.Contains("bottom"))
             blockControl.outtakeToBottomBool = true;
-        }
+
         yield return new WaitForSeconds(outtakeDuration);
 
         isOuttaking = false;
         blockControl.outtakeToBottomBool = false;
         blockControl.outtakeToTopBool = false;
         blockControl.outtakeToCenterBool = false;
+
         target = null;
         yield return null;
     }
 
-    void Start()
-    {        
-        target = FindNewBlockTarget();        
-        agent.updateRotation = false;
-        StartRotating();
-    }
-
-    void Update()
-    {        
-        if (target == null)
-        {
-            if (blockControl.blockStorage > 0)
-            {
-                target = FindGoalOrBlockTarget();
-            }
-            else if (blockControl.blockStorage == 0)
-            {
-                target = FindNewBlockTarget();
-            }
-            else if (blockControl.blockStorage == 5)
-            {
-                target = FindNewGoalTarget();
-            }
-            StartRotating();
-        }
-        distance = Vector3.Distance(transform.position, target.position);
-        if (isRotating || isOuttaking)
-        {
-            agent.enabled = false;
-        }
-        else
-        {
-            agent.enabled = true;
-            agent.SetDestination(target.position);
-        }
-
-        if (target.gameObject.CompareTag("RedBlock"))
-        {
-            if (distance < blockDistanceThreshold)
-            {
-                blockControl.intakeTrigger.SetActive(true);
-            }
-        }
-        else
-        {
-            blockControl.intakeTrigger.SetActive(false);
-        }
-
-        if (target.gameObject.CompareTag("GoalObj"))
-        {
-            if (distance < goalDistanceThreshold)
-            {
-                if (!isOuttaking)
-                {
-                    Outtake();
-                }
-            }
-        }
-
-        if (target.IsChildOf(this.transform))
-        {
-            target = null;          
-        }
-        if (target.gameObject.name.Contains("Block") && blockControl.blockStorage == 5)
-        {
-            target = FindNewGoalTarget();
-        }
-    }
-
+    // --------------------------
+    // TARGETING
+    // --------------------------
     public Transform FindNewBlockTarget()
     {
-        GameObject[] allBlocks = GameObject.FindGameObjectsWithTag("RedBlock");
-        float bestDist = 10000;
-        float currentDist;
-        Transform transformToReturn = null;
+        GameObject[] allBlocks = GameObject.FindGameObjectsWithTag(tag);
+        float bestDist = Mathf.Infinity;
+        Transform closest = null;
+
         foreach (GameObject obj in allBlocks)
         {
-            if (obj.transform.IsChildOf(this.transform))
+            if (obj.transform.IsChildOf(this.transform)) continue;
+            if (IsInScoreZone(obj)) continue;
+
+            float dist = Vector3.Distance(obj.transform.position, transform.position);
+            if (dist < bestDist)
             {
-                continue;
-            }
-            if (IsInScoreZone(obj)) 
-            {
-                continue; 
-            }
-            currentDist = Vector3.Distance(obj.transform.position, transform.position);
-            if (currentDist <= bestDist)
-            {
-                bestDist = currentDist;
-                transformToReturn = obj.transform;
+                bestDist = dist;
+                closest = obj.transform;
             }
         }
-        return transformToReturn;
+
+        return closest;
     }
 
     public Transform FindNewGoalTarget()
     {
         GameObject[] goals = GameObject.FindGameObjectsWithTag("GoalObj");
-        float bestDist = 10000;
-        float currentDist;
-        Transform transformToReturn = null;
+        float bestDist = Mathf.Infinity;
+        Transform closest = null;
+
         foreach (GameObject obj in goals)
-        {            
-            currentDist = Vector3.Distance(obj.transform.position, transform.position);
-            if (currentDist <= bestDist)
+        {
+            float dist = Vector3.Distance(obj.transform.position, transform.position);
+            if (dist < bestDist)
             {
-                bestDist = currentDist;
-                transformToReturn = obj.transform;
+                bestDist = dist;
+                closest = obj.transform;
             }
         }
-        return transformToReturn;
+
+        return closest;
     }
 
     public Transform FindGoalOrBlockTarget()
@@ -230,40 +259,21 @@ public class AITest : MonoBehaviour
         Transform goal = FindNewGoalTarget();
         Transform block = FindNewBlockTarget();
 
-        if (block == null)
-        {
-            return goal;
-        }
+        if (block == null) return goal;
 
-        float goalDist = Vector3.Distance(goal.transform.position, transform.position);
-        float blockDist = Vector3.Distance(block.transform.position, transform.position);
+        float goalDist = Vector3.Distance(goal.position, transform.position);
+        float blockDist = Vector3.Distance(block.position, transform.position);
 
-        if (goalDist > blockDist)
-        {
-            return goal;
-        }
-        else
-        {
-            return block;
-        }
+        return (goalDist > blockDist) ? goal : block;
     }
 
     public bool IsInScoreZone(GameObject obj)
     {
-        ScoreZoneScript[] scoreZones = FindObjectsOfType<ScoreZoneScript>();
-        foreach (ScoreZoneScript zone in scoreZones)
+        foreach (var zone in ScoreZoneScript.AllZones)
         {
-            Collider zoneCollider = zone.GetComponent<Collider>();
-
-            if (zoneCollider != null)
-            {                
-                if (zoneCollider.bounds.Contains(obj.transform.position))
-                {
-                    return true;
-                }
-            }
+            if (zone == obj)
+                return true;
         }
         return false;
     }
-    
 }
