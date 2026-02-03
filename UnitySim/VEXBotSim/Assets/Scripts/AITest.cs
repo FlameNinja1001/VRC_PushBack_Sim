@@ -65,7 +65,13 @@ public class AITest : MonoBehaviour
         else
         {
             agent.enabled = true;
-            agent.SetDestination(target.position);
+            NavMeshHit hit;
+
+            if (NavMesh.SamplePosition(target.position, out hit, 2f, NavMesh.AllAreas))
+            {
+                agent.SetDestination(hit.position);
+            }
+
         }
 
         // Handle intake trigger for blocks
@@ -151,7 +157,7 @@ public class AITest : MonoBehaviour
             time += Time.deltaTime * speed;
             yield return null;
         }
-
+        
         transform.rotation = lookRotation; // snap exactly
         isRotating = false;
     }
